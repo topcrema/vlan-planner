@@ -1,0 +1,2 @@
+app_identifier("com.topcrema.vlanplanner")
+team_id(ENV["APPLE_TEAM_ID"])

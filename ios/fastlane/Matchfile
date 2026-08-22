@@ -1,0 +1,6 @@
+# Certificates and profiles are stored encrypted in a separate PRIVATE repo.
+# Never point this at the public app repo.
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+type("appstore")
+app_identifier(["com.topcrema.vlanplanner"])

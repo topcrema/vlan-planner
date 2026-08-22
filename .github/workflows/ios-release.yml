@@ -1,0 +1,52 @@
+# Builds a signed IPA on the macOS runner and uploads it to TestFlight.
+#
+# Required repository secrets (Settings > Secrets and variables > Actions):
+#   ASC_KEY_ID          App Store Connect API key ID
+#   ASC_ISSUER_ID       App Store Connect API issuer ID
+#   ASC_KEY_CONTENT     Contents of the .p8 key, base64-encoded
+#   APPLE_TEAM_ID       Developer Team ID (from developer.apple.com membership page)
+#   MATCH_GIT_URL       HTTPS URL of the PRIVATE certificates repo (fastlane match storage)
+#   MATCH_GIT_BASIC_AUTHORIZATION  base64("<github-user>:<personal-access-token>") for that repo
+#   MATCH_PASSWORD      Passphrase used by match to encrypt certificates
+#
+# First run: trigger manually (workflow_dispatch) after the secrets are set;
+# match will create the distribution certificate and provisioning profile
+# automatically via the API key. Later runs are triggered by pushing a v* tag.
+
+name: iOS Release (TestFlight)
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build-and-upload:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter test
+
+      - name: Build (unsigned)
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
+
+      - name: Sign and upload to TestFlight
+        working-directory: ios
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          bundle install
+          bundle exec fastlane release

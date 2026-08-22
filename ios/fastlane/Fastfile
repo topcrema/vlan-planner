@@ -1,0 +1,38 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sign the already-built app and upload to TestFlight"
+  lane :release do
+    setup_ci
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+
+    # Creates the cert/profile on first run, reuses them afterwards.
+    match(type: "appstore", api_key: api_key, readonly: false)
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: ENV["APPLE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: "com.topcrema.vlanplanner",
+      profile_name: "match AppStore com.topcrema.vlanplanner"
+    )
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

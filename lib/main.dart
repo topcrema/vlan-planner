@@ -43,6 +43,14 @@ class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Web only: allow deep-linking a tab (?tab=0..3), used for screenshots.
+    final t = int.tryParse(Uri.base.queryParameters['tab'] ?? '');
+    if (t != null && t >= 0 && t <= 3) _index = t;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(

@@ -12,20 +12,22 @@ One-time setup and the per-release flow. Everything runs from Windows + GitHub A
 1. [appstoreconnect.apple.com](https://appstoreconnect.apple.com) > Apps > **+ New App**: platform iOS, name "VLAN Planner", primary language English, bundle ID `com.topcrema.vlanplanner`, SKU `vlanplanner`.
 2. Users and Access > **Integrations** > App Store Connect API > generate a team key with **App Manager** role. Download the `.p8` (single chance!), note Key ID and Issuer ID.
 
-### 3. Certificates repo (private!)
-1. Create a **private** GitHub repo, e.g. `topcrema/appstore-certs`. Never reuse the public app repo.
-2. Create a GitHub fine-grained PAT with read/write content access to that repo only.
+### 3. Certificates repo (private!) — DONE 2026-08-23
+`topcrema/appstore-certs` (private) holds the encrypted certs. CI reaches it via a
+write-access deploy key (secret `MATCH_SSH_KEY`); the key is disposable — if lost,
+generate a new ed25519 pair, replace the deploy key and the secret. Never reuse the
+public app repo for cert storage.
 
 ### 4. GitHub Actions secrets (public app repo > Settings > Secrets > Actions)
-| Secret | Value |
-|---|---|
-| `ASC_KEY_ID` | API Key ID |
-| `ASC_ISSUER_ID` | API Issuer ID |
-| `ASC_KEY_CONTENT` | `base64 -w0 AuthKey_XXXX.p8` output |
-| `APPLE_TEAM_ID` | Team ID |
-| `MATCH_GIT_URL` | `https://github.com/topcrema/appstore-certs.git` |
-| `MATCH_GIT_BASIC_AUTHORIZATION` | `base64("topcrema:<PAT>")` |
-| `MATCH_PASSWORD` | new passphrase for cert encryption (save in 1Password) |
+| Secret | Value | Status |
+|---|---|---|
+| `ASC_KEY_ID` | API Key ID | pending |
+| `ASC_ISSUER_ID` | API Issuer ID | pending |
+| `ASC_KEY_CONTENT` | base64 of the `.p8` key file | pending |
+| `APPLE_TEAM_ID` | Team ID | pending |
+| `MATCH_GIT_URL` | `git@github.com:topcrema/appstore-certs.git` | done |
+| `MATCH_SSH_KEY` | deploy key private half | done |
+| `MATCH_PASSWORD` | cert encryption passphrase (copy in 1Password) | done |
 
 ### 5. First signed build
 Run the **iOS Release (TestFlight)** workflow manually (Actions tab > workflow_dispatch). First run creates the distribution certificate + provisioning profile via match and uploads build 1 to TestFlight.

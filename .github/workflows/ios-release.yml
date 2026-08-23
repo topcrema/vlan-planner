@@ -5,8 +5,8 @@
 #   ASC_ISSUER_ID       App Store Connect API issuer ID
 #   ASC_KEY_CONTENT     Contents of the .p8 key, base64-encoded
 #   APPLE_TEAM_ID       Developer Team ID (from developer.apple.com membership page)
-#   MATCH_GIT_URL       HTTPS URL of the PRIVATE certificates repo (fastlane match storage)
-#   MATCH_GIT_BASIC_AUTHORIZATION  base64("<github-user>:<personal-access-token>") for that repo
+#   MATCH_GIT_URL       SSH URL of the PRIVATE certificates repo (fastlane match storage)
+#   MATCH_SSH_KEY       Private half of a write-access deploy key on that repo
 #   MATCH_PASSWORD      Passphrase used by match to encrypt certificates
 #
 # First run: trigger manually (workflow_dispatch) after the secrets are set;
@@ -37,6 +37,11 @@ jobs:
       - name: Build (unsigned)
         run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
 
+      - name: Set up SSH access to certificates repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.MATCH_SSH_KEY }}
+
       - name: Sign and upload to TestFlight
         working-directory: ios
         env:
@@ -45,7 +50,6 @@ jobs:
           ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: |
           bundle install

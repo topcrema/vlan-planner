@@ -19,15 +19,19 @@ generate a new ed25519 pair, replace the deploy key and the secret. Never reuse 
 public app repo for cert storage.
 
 ### 4. GitHub Actions secrets (public app repo > Settings > Secrets > Actions)
-| Secret | Value | Status |
-|---|---|---|
-| `ASC_KEY_ID` | API Key ID | pending |
-| `ASC_ISSUER_ID` | API Issuer ID | pending |
-| `ASC_KEY_CONTENT` | base64 of the `.p8` key file | pending |
-| `APPLE_TEAM_ID` | Team ID | pending |
-| `MATCH_GIT_URL` | `git@github.com:topcrema/appstore-certs.git` | done |
-| `MATCH_SSH_KEY` | deploy key private half | done |
-| `MATCH_PASSWORD` | cert encryption passphrase (copy in 1Password) | done |
+All 7 set on 2026-08-23. Key material lives in 1Password (vault `claude-automation`):
+`.p8` as document "vlan-planner ASC API key", IDs in note "vlan-planner ASC API IDs",
+match passphrase in "vlan-planner MATCH_PASSWORD".
+
+| Secret | Value |
+|---|---|
+| `ASC_KEY_ID` | API Key ID |
+| `ASC_ISSUER_ID` | API Issuer ID |
+| `ASC_KEY_CONTENT` | base64 of the `.p8` key file |
+| `APPLE_TEAM_ID` | Team ID |
+| `MATCH_GIT_URL` | `git@github.com:topcrema/appstore-certs.git` |
+| `MATCH_SSH_KEY` | deploy key private half |
+| `MATCH_PASSWORD` | cert encryption passphrase |
 
 ### 5. First signed build
 Run the **iOS Release (TestFlight)** workflow manually (Actions tab > workflow_dispatch). First run creates the distribution certificate + provisioning profile via match and uploads build 1 to TestFlight.
